@@ -1,0 +1,13 @@
+# Ignore Dialogflow credentials and secrets
+dialogflow-key.json
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+
+# VS Code files
+.vscode/
+
+# Log files
+*.log

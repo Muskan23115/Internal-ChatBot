@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>IntraBot</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body class="light">
+  <!-- Splash Screen -->
+  <div id="splash-screen">
+    <h1>👋 Welcome to IntraBot</h1>
+  </div>
+
+  <!-- Main Layout -->
+  <div class="main-container">
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+      <h2>History</h2>
+      <ul id="history-list"></ul>
+    </div>
+
+    <!-- Chat Area -->
+    <div class="chat-container">
+      <div class="chat-header">
+        🤖 IntraBot
+        <label class="theme-switch">
+          <input type="checkbox" id="theme-toggle" />
+          <span class="slider round"></span>
+        </label>
+        
+      </div>
+
+      <div class="chat-box" id="chat-box"></div>
+
+      <div class="typing-dots" id="typing" style="display: none;">
+        <span></span><span></span><span></span>
+      </div>
+
+      <div class="chat-input">
+        <input type="text" id="user-input" placeholder="Type your message..." />
+        <button id="mic-button" title="Speak">🎤</button>
+        <button id="send-btn" onclick="sendMessage()" title="Send">➤</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
