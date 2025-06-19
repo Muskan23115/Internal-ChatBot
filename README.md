@@ -1,6 +1,6 @@
-# InternBot – Internal Chatbot using Dialogflow
+# IntraBot – Internal Chatbot using Dialogflow
 
-InternBot is an internal web-based chatbot developed using **Dialogflow**, **Flask**, and a custom front-end UI. It is designed for use within an internship project and answers specific questions related to the internship.
+IntraBot is an internal web-based chatbot developed using **Dialogflow**, **Flask**, and a custom front-end UI. It is designed for use within an internship project and answers specific questions related to the internship.
 
 ---
 
@@ -18,7 +18,7 @@ InternBot is an internal web-based chatbot developed using **Dialogflow**, **Fla
 
 ## 💬 What It Can Answer
 
-InternBot is designed for **internal use** and answers only specific questions, such as:
+IntraBot is designed for **internal use** and answers only specific questions, such as:
 
 - “What is the name of the chatbot?”
 - “Tell me about the internship”
