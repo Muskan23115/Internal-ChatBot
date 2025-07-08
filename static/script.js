@@ -11,56 +11,66 @@ window.onload = () => {
 
 // Toggle theme
 const themeToggle = document.getElementById("theme-toggle");
-
 themeToggle.onchange = () => {
   document.body.classList.toggle("dark", themeToggle.checked);
 };
 
-// Send button
-function sendMessage() {
-  const message = input.value.trim();
-  if (!message) return;
+// Send message to backend
+function sendMessage(message) {
+  if (!message.trim()) return;
+
   appendMessage("You", message, "user");
   input.value = "";
-  typingDiv.style.display = "flex";
 
-  fetch("/chat", {
+  typingDiv.style.display = "block";
+
+  fetch("/chatgpt", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message })
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ message: message })
   })
-  .then(res => res.json())
-  .then(data => {
-    typingDiv.style.display = "none";
-    appendMessage("IntraBot", data.response, "bot");
-  });
+    .then(response => response.json())
+    .then(data => {
+      displayBotResponse(data.reply);
+    })
+    .catch(error => {
+      displayBotResponse("Sorry, there was an error!");
+      console.error("Error:", error);
+    });
+}
+
+// Show bot response
+function displayBotResponse(message) {
+  typingDiv.style.display = "none";
+  appendMessage("Bot", message, "bot");
 }
 
 // Add message to chat + history
 function appendMessage(sender, message, type) {
-    const msg = document.createElement("div");
-    msg.className = "chat-message " + type;
-    msg.innerHTML = `<strong>${sender}:</strong> ${message}`;
-    chatBox.appendChild(msg);
-    chatBox.scrollTop = chatBox.scrollHeight;
-  
-    // Create history entry with timestamp
-    const item = document.createElement("li");
-    const now = new Date();
-    const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  
-    item.innerHTML = `
-      <div class="history-entry">
-        <div class="history-time">${timeString}</div>
-        <div class="history-text">${message}</div>
-      </div>
-      <hr>
-    `;
-  
-    historyList.appendChild(item);
-  }
-  
-// Mic button
+  const msg = document.createElement("div");
+  msg.className = "chat-message " + type;
+  msg.innerHTML = `<strong>${sender}:</strong> ${message}`;
+  chatBox.appendChild(msg);
+  chatBox.scrollTop = chatBox.scrollHeight;
+
+  const item = document.createElement("li");
+  const now = new Date();
+  const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+  item.innerHTML = `
+    <div class="history-entry">
+      <div class="history-time">${timeString}</div>
+      <div class="history-text">${message}</div>
+    </div>
+    <hr>
+  `;
+
+  historyList.appendChild(item);
+}
+
+// Mic input
 document.getElementById("mic-button").onclick = () => {
   const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
   recognition.lang = "en-US";
@@ -69,26 +79,28 @@ document.getElementById("mic-button").onclick = () => {
   recognition.onresult = (event) => {
     const transcript = event.results[0][0].transcript;
     input.value = transcript;
+    sendMessage(transcript);  // Optional: auto-send
   };
 };
-// New Enter-key shortcut
-// Detect Enter key on input field
-document.getElementById("user-input").addEventListener("keydown", function (event) {
-    if (event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault(); // Prevents newline
-      document.getElementById("send-btn").click();
+
+// DOM Ready
+document.addEventListener("DOMContentLoaded", function () {
+  const inputField = document.getElementById("user-input");
+  const sendButton = document.getElementById("send-btn");
+
+  // Send on button click
+  sendButton.addEventListener("click", function () {
+    const message = inputField.value.trim();
+    if (message !== "") {
+      sendMessage(message);
     }
   });
-  
-  document.addEventListener("DOMContentLoaded", function () {
-    const inputField = document.getElementById("user-input");
-    const sendButton = document.getElementById("send-btn");
-  
-    inputField.addEventListener("keydown", function (event) {
-      if (event.key === "Enter" && !event.shiftKey) {
-        event.preventDefault(); // prevent newline
-        sendButton.click(); // trigger send
-      }
-    });
+
+  // Send on Enter key
+  inputField.addEventListener("keydown", function (event) {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      sendButton.click();
+    }
   });
-  
+});

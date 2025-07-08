@@ -1,40 +1,43 @@
-import os
-from flask import Flask, render_template, request, jsonify
-from google.cloud import dialogflow_v2 as dialogflow
-from google.api_core.exceptions import InvalidArgument
-import json
+﻿import os
+from flask import Flask, request, jsonify, render_template
+from flask_cors import CORS
+from openai import OpenAI
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
+CORS(app)
 
-# Set path to your downloaded Dialogflow key
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "dialogflow-key.json"
+api_key = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=api_key)
 
-# Dialogflow setup
-DIALOGFLOW_PROJECT_ID = "internal-chatbot-i9hq"  # 🔁 Replace with your project ID
-DIALOGFLOW_LANGUAGE_CODE = "en"
-SESSION_ID = "current-user-id"
-
-@app.route("/")
+# Root route renders index.html
+@app.route("/", methods=["GET"])
 def home():
     return render_template("index.html")
 
-@app.route("/chat", methods=["POST"])
-def chat():
-    user_input = request.json["message"]
+# API route for chat response
+@app.route("/chatgpt", methods=["POST"])
+def get_response():
+    user_input = request.json.get("message")
 
-    session_client = dialogflow.SessionsClient()
-    session = session_client.session_path(DIALOGFLOW_PROJECT_ID, SESSION_ID)
-
-    text_input = dialogflow.types.TextInput(text=user_input, language_code=DIALOGFLOW_LANGUAGE_CODE)
-    query_input = dialogflow.types.QueryInput(text=text_input)
+    if not user_input:
+        return jsonify({"reply": "No message provided."}), 400
 
     try:
-        response = session_client.detect_intent(session=session, query_input=query_input)
-        bot_response = response.query_result.fulfillment_text
-        return jsonify({"response": bot_response})
-    except InvalidArgument as e:
-        return jsonify({"response": f"Dialogflow error: {e}"})
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "You are a helpful internal chatbot."},
+                {"role": "user", "content": user_input}
+            ]
+        )
+        reply = response.choices[0].message.content.strip()
+        return jsonify({"reply": reply})
 
+    except Exception as e:
+        return jsonify({"reply": f"OpenAI error: {str(e)}"}), 500
 
 if __name__ == "__main__":
     app.run(debug=True)
